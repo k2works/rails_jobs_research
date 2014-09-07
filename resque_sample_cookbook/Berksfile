@@ -1,0 +1,7 @@
+source "https://api.berkshelf.com"
+
+metadata
+
+cookbook 'rvm', github: 'fnichol/chef-rvm'
+cookbook 'redis', github: 'miah/chef-redis'
+cookbook 'emacs', '~> 0.9.0'
