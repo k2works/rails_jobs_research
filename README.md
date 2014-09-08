@@ -19,6 +19,8 @@ Railsでのジョブ実行環境の調査及び評価
 # 構成
 + [Resque](#1)
 + [Delayed](#2)
++ [デプロイ](#3)
++ [Resque vs DelayedJob](#4)
 
 # 詳細
 ## <a name="1">Resque</a>
@@ -94,7 +96,7 @@ gem "daemons"
 ```
 ### インストールとマイグレーション
 ```
-$ bundle install --path=vendor/bundler
+$ bundle
 $ bundle exec rails generate delayed_job:active_record
 bundle exec rake db:migrate
 ```
@@ -152,6 +154,80 @@ Delayed::Worker.max_attempts = 3 # リトライ回数
 Delayed::Worker.max_run_time = 5.minutes # 最大実行時間
 ```
 
+## <a name="3">デプロイ</a>
+### デプロイ先仮想マシン準備
+```bash
+$ cd cookbooks/delayed_job_sample
+$ vagrant up --provision
+```
+
+### Capistranoインストール
+_delayed_job_sample/Gemfile_
+```ruby
+gem "capistrano"
+gem "capistrano-ext"
+```
+```
+$ bundle install
+```
+```
+$ cap install
+```
+### デプロイ用ファイル編集
+_delayed_job_sample/config/deploy.rb_  
+_delayed_job_sample/config/deploy/production.rb_  
+_delayed_job_sample/Capfile_
+
+### デプロイ実行
+```bash
+$ cap production deploy
+$ ssh vagrant@192.168.33.10
+vagrant@192.168.33.10's password:vagrant  
+$ cd delayed_job_sample/
+$ rm -rf vendor
+$ bundle
+$ bundle exec rake db:migrate
+$ bundle exec rails s
+```
+
+## <a name="4">Resque vs DelayedJob</a>
+
+どのようにResqueとDelayJobを比べればよいか、そしてなぜ一方を選択するか？
+
++ Resqueは複数のキューをサポートしています。  
++ DelayedJobは洗練された優先付けができる。  
++ Resqueワーカーはメモリリークや膨張から立ち直るのが早い。  
++ DelayedJobワーカーはすごいシンプルで変更が容易。  
++ ResqueはRedisが必要。  
++ DelayedJobはActiveRecordが必要。  
++ ResqueはJSON Rubyオブジェクトをキューにすることが唯一できる。  
++ DelayedJobはRubyオブジェクトを引数にできる。  
++ ResqueにはSinatra製モニタリングアプリが含まれている。  
++ DelayedJobはインターフェースを自分で追加したらならRailsアプリケーションの中で検索することができる。  
++ もしRailsの開発していてすでにデータベースとActiveRecordを使っているなら。DelayJobはとても簡単にセットアップできます。GitHubは2億件のジョブに使っています。  
+
+Resqueを選択する場合
+
++ 複数のキューを必要とする。  
++ 数値の優先順位を気にしなくてくてよくなる。  
++ 全てのRubyオブジェクト永続化する必要がなくなる。  
++ 潜在的に多くのキューを必要とする。  
++ 何が起こっているのか確認したい。  
++ 多くの失敗や混乱が想定される。  
++ Redisをセットアップできる。  
++ RAM上での短時間の実行ではない。
+
+DelayedJobを選択する場合
+
++ 数値的に順位付けるのが好き。  
++ 毎日大量のジョブを実行しない。  
++ キューが小さくて早い。  
++ 失敗や混乱が少ない。  
++ なんでもすぐにキューに載せたい。  
++ Redisをセットアップしたくない。  
+
+常にResqueがDelayedJobが優れているわけではない、だから自分のアプリケーションにとってベストな選択をしよう。
+
 # 参照
 + [Resque](https://github.com/resque/resque/tree/1-x-stable)
 + [Hello World Resque (Railsにresqueを導入する)](http://qiita.com/hilotter/items/fc432c33f5a012b87dca)
@@ -159,3 +235,4 @@ Delayed::Worker.max_run_time = 5.minutes # 最大実行時間
 + [【Rails 4】delayed_jobを使う](http://qiita.com/azusanakano/items/1d2629763f35b5466286)
 + [ghazel/daemons](https://github.com/ghazel/daemons)
 + [BestGems Pickup! 第6回 「daemons」](http://www.xmisao.com/2013/09/28/bestgems-pickup-daemons.html)
++ [Capistrano3 をファイル転送のためだけに使ってみる](http://isann.hatenablog.com/entry/2014/01/16/003850)

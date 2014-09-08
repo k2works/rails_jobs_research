@@ -22,7 +22,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
   config.vm.define :host1 do | host1 |
     host1.vm.hostname = "sample"
-    host1.vm.network :private_network, ip: "192.168.10.1"
+    host1.vm.network :private_network, ip: "192.168.33.10"
     host1.vm.provision :chef_solo do |chef|
       chef_gem_path    = "/opt/chef/embedded/lib/ruby/gems/1.9.1"
       chef.binary_env  = "GEM_PATH=#{chef_gem_path} GEM_HOME=#{chef_gem_path}"
