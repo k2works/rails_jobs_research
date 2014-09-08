@@ -11,6 +11,10 @@ Railsでのジョブ実行環境の調査及び評価
 | rails     　　　|4.1.1        |             |
 | redis     　　　|2.8.9        |             |
 | resque    　　　|1.5.1        |             |
+| delayed_job 　 |4.0.3        |             |
+| delayed_job_active_record 　 |4.0.2        |             |
+| daemons 　 |1.1.9        |             |
+
 
 # 構成
 + [Resque](#1)
@@ -18,10 +22,31 @@ Railsでのジョブ実行環境の調査及び評価
 
 # 詳細
 ## <a name="1">Resque</a>
-_resque_sample_
 ### 初期設定
+```bash
+$ rails new resque_sample
+```
+gem追加
+```ruby
+gem 'resque'
+```
+```
+$ bundle install --path=vendor/bundler
+```
+_resque_sample/config/initializers/resque.rb_
+```
+Resque.redis = 'localhost:6379'
+Resque.redis.namespace = "resque:resque_sample:#{Rails.env}" # アプリ毎に異なるnamespaceを定義しておく
+```
 ### Controllerの作成
+```bash
+$ rails g controller home
+```
 ### ResqueWorker作成
+```bash
+$ mkdir app/workers
+$ rails g task resque
+```
 ```
 QUEUE=resque_sample rake environment resque:work
 
@@ -29,6 +54,14 @@ QUEUE=resque_sample rake environment resque:work
 QUEUE=* rake environment resque:work
 ```
 ### 確認
+ブラウザから
+
+http://localhost:3000/hello/world  
+http://localhost:3000/hello/resque  
+にアクセスして
+```bash
+$ tail -f log/resque.log
+```
 ### Daemon化してみる
 起動
 ```bash
@@ -46,8 +79,83 @@ Rails.application.routes.draw do
 ```
 _http://localhost:3000/resque/_にアクセス
 ## <a name="2">Delayed</a>
+### Gemfile作成
+```
+$ rails new delayed_job_sample
+$ cd delayed_job_sample
+```
+_delayed_job_sample/Gemfile_
+```ruby
+gem "delayed_job"
+gem "delayed_job_active_record"
+
+# デプロイ先でデーモンとして動かすのに必要
+gem "daemons"
+```
+### インストールとマイグレーション
+```
+$ bundle install --path=vendor/bundler
+$ bundle exec rails generate delayed_job:active_record
+bundle exec rake db:migrate
+```
+### 非同期処理を実装
+```
+$ rails g controller home
+$ rails g model hello
+$ rake db:migrate
+```
+処理を実装後`rails s`でサーバーを起動させたら以下にアクセスする。
+_http://localhost:3000/hello/hoge_
+
+Rakeタスク実行
+```
+$ bundle exec rake jobs:work
+[Worker(host:MacBook-Air.local pid:13414)] Starting job worker
+[Worker(host:MacBook-Air.local pid:13414)] Job Class#say_hello (id=1) RUNNING
+[Worker(host:MacBook-Air.local pid:13414)] Job Class#say_hello (id=1) COMPLETED after 5.0079
+[Worker(host:MacBook-Air.local pid:13414)] 1 jobs processed at 0.1984 j/s, 0 failed
+```
+ログを確認
+```
+$ cat log/delay.log
+# Logfile created on 2014-09-08 13:47:25 +0900 by logger.rb/44203
+I, [2014-09-08T13:50:12.464809 #13414]  INFO -- : Hello hoge
+```
+### Daemon化してみる
+_delayed_job_sample/tools_
+```bash
+#!/bin/bash
+bundle exec ./bin/delayed_job $1
+```
+デーモン実行
+```bash
+$ RAILS_ENV=development tools/delayed_job.sh start
+```
+ログ
+```bash
+$ tail -f log/delayed_job.log
+# Logfile created on 2014-09-08 14:17:35 +0900 by logger.rb/44203
+I, [2014-09-08T14:17:35.535434 #13911]  INFO -- : 2014-09-08T14:17:35+0900: [Worker(delayed_job host:MacBook-Air.local pid:13911)] Starting job worker
+I, [2014-09-08T14:20:10.561905 #13967]  INFO -- : 2014-09-08T14:20:10+0900: [Worker(delayed_job host:MacBook-Air.local pid:13967)] Starting job worker
+I, [2014-09-08T14:21:20.309367 #13994]  INFO -- : 2014-09-08T14:21:20+0900: [Worker(delayed_job host:MacBook-Air.local pid:13994)] Starting job worker
+I, [2014-09-08T14:22:50.192659 #14066]  INFO -- : 2014-09-08T14:22:50+0900: [Worker(delayed_job host:MacBook-Air.local pid:14066)] Starting job worker
+I, [2014-09-08T14:23:50.319379 #14066]  INFO -- : 2014-09-08T14:23:50+0900: [Worker(delayed_job host:MacBook-Air.local pid:14066)] Job Class#say_hello (id=2) RUNNING
+I, [2014-09-08T14:23:55.329217 #14066]  INFO -- : 2014-09-08T14:23:55+0900: [Worker(delayed_job host:MacBook-Air.local pid:14066)] Job Class#say_hello (id=2) COMPLETED after 5.0092
+I, [2014-09-08T14:23:55.330545 #14066]  INFO -- : 2014-09-08T14:23:55+0900: [Worker(delayed_job host:MacBook-Air.local pid:14066)] 1 jobs processed at 0.1983 j/s, 0 failed
+```
+### 設定ファイル
+_delayed_job_sample/config/initializers/delayed_job_config.rb_
+```ruby
+Delayed::Worker.destroy_failed_jobs = false # 失敗したジョブをDBから削除しない=false
+Delayed::Worker.sleep_delay = 60 # 実行ジョブがない場合に次回実行までのSleep時間（秒）
+Delayed::Worker.max_attempts = 3 # リトライ回数
+Delayed::Worker.max_run_time = 5.minutes # 最大実行時間
+```
 
 # 参照
 + [Resque](https://github.com/resque/resque/tree/1-x-stable)
 + [Hello World Resque (Railsにresqueを導入する)](http://qiita.com/hilotter/items/fc432c33f5a012b87dca)
 + [Delayed::Job](https://github.com/collectiveidea/delayed_job)
++ [【Rails 4】delayed_jobを使う](http://qiita.com/azusanakano/items/1d2629763f35b5466286)
++ [ghazel/daemons](https://github.com/ghazel/daemons)
++ [BestGems Pickup! 第6回 「daemons」](http://www.xmisao.com/2013/09/28/bestgems-pickup-daemons.html)
