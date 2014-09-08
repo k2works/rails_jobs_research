@@ -1,0 +1,32 @@
+=== 0.4.2 / 2011-04-01
+
+* Merged patches from Tilo Prütz
+
+=== 0.4.1 / 2011-03-03
+
+* Merged patch from oruen to fix https://github.com/alexvollmer/daemon-spawn/issues/5
+
+=== 0.4.0 / 2010-09-05
+
+* Lots of fixes from friendly folks
+
+=== 0.3.0 / 2010-04-18
+
+* Typo fix and internal refactoring patches from Emmanuel Gomez
+* Added multi-process spawning and management (inspired by Jontathan Tropper's
+  patches)
+* Added LSB-compliance patches from  Woody Peterson
+* Added some actual test-coverage :-P
+* Moved examples from "examples" directory to "test/servers"
+
+=== 0.2.0 / 2009-04-22
+
+* Allow specification of args instead of ARGV so that scripts can
+  handle command line parsing and validation prior to spawning.
+
+=== 0.1.0 / 2009-01-26
+
+* 1 major enhancement
+
+  * Happy Birthday!
+
