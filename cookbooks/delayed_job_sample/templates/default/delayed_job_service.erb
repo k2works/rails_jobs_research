@@ -1,0 +1,81 @@
+#!/bin/sh
+
+# chkconfig: - 85 15
+# description: start/stop unicorn script.
+# processname: delayed_job_app
+
+export PATH=/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin
+
+# move to project root directory
+NAME=<%= node['my_app'] %>
+APP_ROOT_DIR="/home/vagrant/delayed_job_sample"
+PID="$APP_ROOT_DIR/tmp/pids/delayed_job.pid"
+ENVIROMENT=<%= node['environment'] %>
+RVM_WRAPPER="/usr/local/rvm/wrappers/$NAME"
+
+start()
+{
+  if [ -e $PID ]; then
+    echo "$NAME not started";
+    exit 1;
+  fi
+  echo "start $NAME";
+  cd $APP_ROOT_DIR
+  su -c "RAILS_ENV=$ENVIROMENT $RVM_WRAPPER/bundle exec ./bin/delayed_job start"
+}
+
+stop()
+{
+  if [ ! -e $PID ]; then
+    echo "$NAME not started";
+    exit 1;
+  fi
+  echo "stop $NAME";
+  su -c "kill -QUIT `cat ${PID}`"
+}
+
+force_stop()
+{
+  if [ ! -e $PID ]; then
+    echo "$NAME not started";
+    exit 1;
+  fi
+  echo "stop $NAME";
+  su -c "kill -TERM `cat ${PID}`"
+  su -c "rm -f $PID"
+}
+
+reload()
+{
+  echo "reload $NAME";
+  su -c "RAILS_ENV=$ENVIROMENT $RVM_WRAPPER/bundle exec ./bin/delayed_job restart"
+}
+
+restart()
+{
+    stop
+    start
+}
+
+case "$1" in
+  start)
+    start
+    ;;
+  stop)
+    stop
+    ;;
+  force-stop)
+    force_stop
+    ;;
+  reload)
+    reload
+    ;;
+  restart)
+    restart
+    ;;
+  *)
+    echo "Syntax Error: release [start|stop|force-stop|reload|restart]"
+    ;;
+esac
+
+exit
