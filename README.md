@@ -98,7 +98,7 @@ gem "daemons"
 ```
 $ bundle
 $ bundle exec rails generate delayed_job:active_record
-bundle exec rake db:migrate
+$ bundle exec rake db:migrate
 ```
 ### 非同期処理を実装
 ```
@@ -203,6 +203,7 @@ _cookbooks/delayed_job_sample/recipes/service_config.rb_
 
 サービスの実行&自動起動設定
 ```bash
+$ rvm alias create delayed_job ruby-2.1.1@sample
 $ sudo service delayed_job start
 $ sudo update-rc.d delayed_job defaults
 ```
