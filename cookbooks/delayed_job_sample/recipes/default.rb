@@ -9,26 +9,3 @@
 execute "apt-get update" do
   command "apt-get update"
 end
-
-# Rails関連ライブラリ
-%w{git libssl-dev libsqlite3-dev libmysqlclient-dev}.each do |pkg|
-  package pkg do
-    action :install
-  end
-end
-
-rvm_ruby "#{node['rvm']['app_version']}" do
-  user   'vagrant'
-  action :install
-end
-
-rvm_gemset "#{node['rvm']['app_gemset']}" do
-  ruby_string "#{node['rvm']['app_version']}"
-  user   'vagrant'
-  action :create
-end
-
-rvm_default_ruby "#{node['rvm']['app_version']}@#{node['rvm']['app_gemset']}" do
-  user   'vagrant'
-  action :create
-end

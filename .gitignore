@@ -3,5 +3,5 @@ resque_sample.tgz
 
 cookbooks/delayed_job_sample/.vagrant
 cookbooks/resque_sample/.vagrant
-resque_sample/vendor
-delayed_job_sample/vendor
+resque_sample/vendor/*
+delayed_job_sample/vendor/*

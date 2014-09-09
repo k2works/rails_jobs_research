@@ -26,5 +26,5 @@ linking shared-object sqlite3/sqlite3_native.bundle
 ld: warning: directory not found for option '-L/Users/travis/.sm/pkg/active/lib'
 
 make "DESTDIR=" install
-/usr/bin/install -m 0755 sqlite3_native.bundle ./.gem.20140908-2043-xmnyqj/sqlite3
+/usr/bin/install -m 0755 sqlite3_native.bundle ./.gem.20140908-24750-vra5yg/sqlite3
 installing default sqlite3_native libraries

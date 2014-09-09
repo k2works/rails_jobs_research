@@ -29,12 +29,14 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
       chef.binary_path = "/opt/chef/bin"
 
       chef.run_list = %w[
-        recipe[rvm::vagrant]
-        recipe[rvm::user_install]
         recipe[delayed_job_sample::default]
+        recipe[rvm::vagrant]
+        recipe[rvm::system]
+        recipe[delayed_job_sample::rvm_config]
         recipe[database::mysql]
         recipe[mysql::server]
         recipe[emacs]
+        recipe[delayed_job_sample::service_config]
       ]
     end
   end

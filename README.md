@@ -186,8 +186,25 @@ vagrant@192.168.33.10's password:vagrant
 $ cd delayed_job_sample/
 $ rm -rf vendor
 $ bundle
-$ bundle exec rake db:migrate
-$ bundle exec rails s
+```
+### Production環境セットアップ
+```
+$ bundle exec rake secret
+$ export SECRET_KEY_BASE=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+$ sudo chown -R vagrant db/
+$ RAILS_ENV=production bundle exec rake db:migrate
+$ RAILS_ENV=production bundle exec rails s &
+```
+
+### delayed_jobのサービス化
+_cookbooks/delayed_job_sample/attributes/default.rb_  
+_cookbooks/delayed_job_sample/templates/default/delayed_job_service.erb_  
+_cookbooks/delayed_job_sample/recipes/service_config.rb_  
+
+サービスの実行&自動起動設定
+```bash
+$ sudo service delayed_job start
+$ sudo update-rc.d delayed_job defaults
 ```
 
 ## <a name="4">Resque vs DelayedJob</a>
@@ -236,3 +253,6 @@ DelayedJobを選択する場合
 + [ghazel/daemons](https://github.com/ghazel/daemons)
 + [BestGems Pickup! 第6回 「daemons」](http://www.xmisao.com/2013/09/28/bestgems-pickup-daemons.html)
 + [Capistrano3 をファイル転送のためだけに使ってみる](http://isann.hatenablog.com/entry/2014/01/16/003850)
++ [Unicorn プロセスを自動起動させる init.d スクリプト用の Chef Recipe](http://easyramble.com/unicorn-initd-chef-recipe.html)
++ [Using RVM and Ruby-based services that start via init.d or upstart](http://rvm.io/integration/init-d)
++ [Debian(Ubuntu)で サービスの起動、停止を管理するツールを調べてみた(chkconfigのかわりになるもの)](http://server-setting.info/debian/debian-like-chkconfig.html)
