@@ -1,7 +1,7 @@
 #!/bin/sh
 
 # chkconfig: - 85 15
-# description: start/stop unicorn script.
+# description: start/stop delayed_job script.
 # processname: delayed_job_app
 
 export PATH=/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin
@@ -16,7 +16,7 @@ RVM_WRAPPER="/usr/local/rvm/wrappers/$NAME"
 start()
 {
   if [ -e $PID ]; then
-    echo "$NAME not started";
+    echo "$NAME already started";
     exit 1;
   fi
   echo "start $NAME";
