@@ -257,3 +257,6 @@ DelayedJobを選択する場合
 + [Unicorn プロセスを自動起動させる init.d スクリプト用の Chef Recipe](http://easyramble.com/unicorn-initd-chef-recipe.html)
 + [Using RVM and Ruby-based services that start via init.d or upstart](http://rvm.io/integration/init-d)
 + [Debian(Ubuntu)で サービスの起動、停止を管理するツールを調べてみた(chkconfigのかわりになるもの)](http://server-setting.info/debian/debian-like-chkconfig.html)
++ [[Rails][非同期処理]delayed_job使い方](https://github.com/ejschmitt/delayed_job_web)
++ [[Rails][非同期処理]delayed_job使い方 その2](http://namakesugi.blog42.fc2.com/blog-entry-70.html)
++ [delayed_job_web](https://github.com/ejschmitt/delayed_job_web)
